@@ -42,15 +42,39 @@
                 margin-top:-25px;
 
             }
-
-        /* Regras para dispositivos móveis */
-        @media (max-width: 768px) {
+        @media (max-width: 500px) {
+            #onfly-valor-economia{
+                font-size: 26px;
+            }
+            #agencia-valor-economia{
+                font-size: 12px;
+            }
+            #diferenca-valores{
+                font-size: 12px;
+            }
+        }
+        @media (min-width: 500px) {
+            .economia-agencia-div{
+                padding: 15px;
+            }
             #onfly-valor-economia{
                 font-size:35px;
             }
+            #agencia-valor-economia{
+                font-size: 18px;
+            }
+            #diferenca-valores{
+                font-size: 18px;
+            }
+        }
 
+        /* Regras para dispositivos móveis */
+        @media (max-width: 768px) {
             #economia-agencia{
                 margin-top:-10px;
+            }
+            .economia-agencia-div{
+                padding: 5px;
             }
             #agencia-valor-economia{
                 align-self: center;
@@ -77,6 +101,7 @@
         .icon2{
             color: #009EFB;
         }
+
         @media (min-width: 768px) {
             #onfly-valor-economia{
                 font-size:40px;
@@ -178,8 +203,9 @@
         }
         .economia-agencia-div{
             align-self:center;
+            
             width:50%;
-            padding: 15px;
+            
             display:flex;
             flex-direction:column;
             align-items:center;
@@ -235,7 +261,14 @@
             background-color: #ecf0f1;
             color: black;
         }
-
+        input[type="text"] {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            margin-top: 10px;
+            background-color: #ecf0f1;
+            color: black;
+        }
         .modal {
             display: none;
             position: fixed;
@@ -338,7 +371,7 @@
                         </div>
                         <div class="formDiv">
                              <label for="gastoAnual"><i class="fa-solid fa-dollar-sign icon"></i> Gasto Anual com Passagens Aéreas (R$):</label>
-                            <input type="number" id="gastoAnual" name="gastoAnual" required><br><br>
+                            <input type="text" id="gastoAnual" name="gastoAnual" maxlength="10" required><br><br>
                         </div>
                     </form>
                 </div>
@@ -384,80 +417,85 @@
     </div>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        const gastoAnualInput = document.getElementById('gastoAnual');
-        const taxaCancelamentoSelect = document.getElementById('taxaCancelamento');
-        const customTaxaInput = document.getElementById('customTaxa');
+    const gastoAnualInput = document.getElementById('gastoAnual');
+    const taxaCancelamentoSelect = document.getElementById('taxaCancelamento');
+    const customTaxaInput = document.getElementById('customTaxa');
 
-        // Inicializa o cálculo com valores padrão
+    // Inicializa o cálculo com valores padrão
+    calcularEconomia();
+
+    // Evento para garantir que o campo de entrada aceite apenas números e tenha no máximo 8 caracteres
+    gastoAnualInput.addEventListener('input', function() {
+        // Remove todos os caracteres que não são números
+        gastoAnualInput.value = gastoAnualInput.value.replace(/[^0-9]/g, '').slice(0, 10);
         calcularEconomia();
-
-        gastoAnualInput.addEventListener('input', calcularEconomia);
-        taxaCancelamentoSelect.addEventListener('change', function() {
-            if (taxaCancelamentoSelect.value === 'custom') {
-                document.getElementById('customModal').style.display = 'block';
-            } else {
-                calcularEconomia();
-            }
-        });
-        customTaxaInput.addEventListener('input', calcularEconomia);
-
-        function setCustomTaxa() {
-            const customTaxaValue = customTaxaInput.value;
-            const selectElement = document.getElementById('taxaCancelamento');
-            if (customTaxaValue) {
-                // Remove existing custom option if present
-                const existingCustomOption = selectElement.querySelector('option[value="custom"]');
-                if (existingCustomOption) {
-                    selectElement.removeChild(existingCustomOption);
-                }
-                // Add new custom option
-                const customOption = document.createElement('option');
-                customOption.value = customTaxaValue;
-                customOption.textContent = `${customTaxaValue}%`;
-                selectElement.insertBefore(customOption, selectElement.querySelector('option[value="custom"]'));
-
-                // Ensure the "Outro valor" option remains at the end
-                if (!selectElement.querySelector('option[value="custom"]')) {
-                    const outroValorOption = document.createElement('option');
-                    outroValorOption.value = 'custom';
-                    outroValorOption.textContent = 'Outro valor';
-                    selectElement.appendChild(outroValorOption);
-                }
-
-                selectElement.value = customTaxaValue;
-                document.getElementById('customModal').style.display = 'none';
-                calcularEconomia();
-            }
-        }
-
-        function closeModal() {
-            document.getElementById('customModal').style.display = 'none';
-        }
-
-        function calcularEconomia() {
-            const gastoAnual = parseFloat(gastoAnualInput.value) || 0;
-            let taxaCancelamento = parseFloat(taxaCancelamentoSelect.value) || 0;
-            if (isNaN(taxaCancelamento)) {
-                taxaCancelamento = parseFloat(customTaxaInput.value) || 0;
-            }
-
-            const percentualCancelado = taxaCancelamento / 100;
-
-            const economiaOnflyAnual = gastoAnual * percentualCancelado * 0.80;
-            const economiaAgenciaAnual = gastoAnual * percentualCancelado * 0.13;
-            const diferencaEconomia = economiaOnflyAnual - economiaAgenciaAnual;
-
-            document.getElementById('onfly-valor-economia').innerHTML = `<i class="fa-solid fa-money-bill icon2"></i> ${economiaOnflyAnual.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
-            document.getElementById('agencia-valor-economia').innerHTML = `${economiaAgenciaAnual.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
-            document.getElementById('diferenca-valores').innerHTML = `${diferencaEconomia.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
-        }
-
-
-
-        document.querySelector('.modal-content .btn').addEventListener('click', setCustomTaxa);
-        document.querySelector('.modal-content .close').addEventListener('click', closeModal);
-       
     });
+
+    taxaCancelamentoSelect.addEventListener('change', function() {
+        if (taxaCancelamentoSelect.value === 'custom') {
+            document.getElementById('customModal').style.display = 'block';
+        } else {
+            calcularEconomia();
+        }
+    });
+
+    customTaxaInput.addEventListener('input', calcularEconomia);
+
+    function setCustomTaxa() {
+        const customTaxaValue = customTaxaInput.value;
+        const selectElement = document.getElementById('taxaCancelamento');
+        if (customTaxaValue) {
+            // Remove existing custom option if present
+            const existingCustomOption = selectElement.querySelector('option[value="custom"]');
+            if (existingCustomOption) {
+                selectElement.removeChild(existingCustomOption);
+            }
+            // Add new custom option
+            const customOption = document.createElement('option');
+            customOption.value = customTaxaValue;
+            customOption.textContent = `${customTaxaValue}%`;
+            selectElement.insertBefore(customOption, selectElement.querySelector('option[value="custom"]'));
+
+            // Ensure the "Outro valor" option remains at the end
+            if (!selectElement.querySelector('option[value="custom"]')) {
+                const outroValorOption = document.createElement('option');
+                outroValorOption.value = 'custom';
+                outroValorOption.textContent = 'Outro valor';
+                selectElement.appendChild(outroValorOption);
+            }
+
+            selectElement.value = customTaxaValue;
+            document.getElementById('customModal').style.display = 'none';
+            calcularEconomia();
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('customModal').style.display = 'none';
+    }
+
+    function calcularEconomia() {
+        const gastoAnual = parseFloat(gastoAnualInput.value) || 0;
+        let taxaCancelamento = parseFloat(taxaCancelamentoSelect.value) || 0;
+        if (isNaN(taxaCancelamento)) {
+            taxaCancelamento = parseFloat(customTaxaInput.value) || 0;
+        }
+
+        const percentualCancelado = taxaCancelamento / 100;
+
+        const economiaOnflyAnual = gastoAnual * percentualCancelado * 0.80;
+        const economiaAgenciaAnual = gastoAnual * percentualCancelado * 0.13;
+        const diferencaEconomia = economiaOnflyAnual - economiaAgenciaAnual;
+
+        document.getElementById('onfly-valor-economia').innerHTML = `<i class="fa-solid fa-money-bill icon2"></i> ${economiaOnflyAnual.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
+        document.getElementById('agencia-valor-economia').innerHTML = `${economiaAgenciaAnual.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
+        document.getElementById('diferenca-valores').innerHTML = `${diferencaEconomia.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
+    }
+
+    document.querySelector('.modal-content .btn').addEventListener('click', setCustomTaxa);
+    document.querySelector('.modal-content .close').addEventListener('click', closeModal);
+});
+
 </script>
 
 </body>
